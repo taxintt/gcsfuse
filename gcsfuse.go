@@ -66,6 +66,19 @@ func (cf *CloudFileSystem) Readdir(path string, fill func(name string, stat *fus
 	return 0
 }
 
+func (cf *CloudFileSystem) Read(path string, buff []byte, ofst int64, fh uint64) (n int) {
+	name := strings.TrimLeft(path, "/")
+	ctx := context.Background()
+	reader, err := cf.bucket.NewRangeReader(
+		ctx, name, ofst, int64(len(buff)), nil)
+	if err != nil {
+		return
+	}
+	defer reader.Close()
+	n, _ = reader.Read()
+	return
+}
+
 func main() {
 	ctx := context.Background()
 	if len(os.Args) < 3 {
